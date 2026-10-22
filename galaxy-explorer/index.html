@@ -1,0 +1,753 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#050611">
+<title>Galaxy Explorer | Discover the Universe</title>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Orbitron:wght@400;500;600;700;800&display=swap');
+
+:root{
+  --bg:#050611;
+  --panel:rgba(17,22,48,.76);
+  --border:rgba(145,156,255,.17);
+  --text:#f4f5ff;
+  --muted:#a3aac8;
+  --purple:#9a7bff;
+  --cyan:#58e4ff;
+  --pink:#ff75c8;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;scroll-padding-top:90px}
+body{
+  background:var(--bg);color:var(--text);
+  font-family:Inter,Arial,sans-serif;overflow-x:hidden;
+  min-height:100vh;
+}
+button,input{font:inherit}
+button{cursor:pointer}
+a{color:inherit;text-decoration:none}
+button:focus-visible,a:focus-visible,input:focus-visible{
+  outline:2px solid var(--cyan);outline-offset:4px
+}
+#starfield{position:fixed;inset:0;width:100%;height:100%;z-index:-2}
+.aurora{
+  position:fixed;z-index:-1;pointer-events:none;
+  width:650px;height:650px;border-radius:50%;
+  filter:blur(110px);opacity:.12;
+  background:#6245ff;top:0;left:-220px
+}
+.aurora.two{background:#00bce5;top:55%;left:auto;right:-300px}
+.container{width:min(1180px,92%);margin:auto}
+header{
+  position:sticky;top:0;z-index:20;
+  background:rgba(5,6,17,.78);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border)
+}
+.nav{
+  min-height:76px;display:flex;align-items:center;
+  justify-content:space-between;gap:20px
+}
+.brand{
+  display:flex;align-items:center;gap:11px;
+  font-family:Orbitron,sans-serif;font-weight:800;letter-spacing:1px;
+  font-size:16px;white-space:nowrap
+}
+.brand-icon{
+  width:39px;height:39px;border-radius:13px;
+  display:grid;place-items:center;font-size:22px;
+  background:linear-gradient(135deg,#7854ff,#19c5ff);
+  box-shadow:0 0 28px #7657ff40
+}
+.brand span span{color:var(--cyan)}
+.nav-links{display:flex;align-items:center;gap:27px}
+.nav-links a{font-size:13px;color:var(--muted);transition:.2s}
+.nav-links a:hover{color:white}
+.nav-actions{display:flex;gap:9px;align-items:center}
+.icon-btn,.menu-btn{
+  border:1px solid var(--border);background:#ffffff08;
+  color:white;border-radius:12px;width:42px;height:42px;
+  font-size:18px;display:grid;place-items:center
+}
+.menu-btn{display:none}
+.btn{
+  display:inline-flex;justify-content:center;align-items:center;gap:8px;
+  border:1px solid var(--border);border-radius:12px;
+  padding:13px 19px;color:white;font-size:13px;font-weight:700;
+  background:#ffffff08;transition:transform .2s,border-color .2s;
+}
+.btn:hover{transform:translateY(-2px);border-color:var(--purple)}
+.btn.primary{
+  border:0;background:linear-gradient(110deg,#8a5cff,#4e9eff);
+  box-shadow:0 8px 30px #745bff38
+}
+.hero{
+  min-height:590px;display:grid;grid-template-columns:1.04fr .96fr;
+  align-items:center;gap:28px;padding:55px 0 65px
+}
+.eyebrow{
+  display:inline-flex;align-items:center;gap:9px;
+  border:1px solid #8273ff43;background:#8e75ff0d;
+  color:#c6bcff;border-radius:30px;padding:9px 13px;
+  font-size:11px;font-weight:700;letter-spacing:1.5px
+}
+.pulse{width:7px;height:7px;background:#67f7c2;border-radius:50%;box-shadow:0 0 12px #67f7c2}
+h1{
+  font-family:Orbitron,sans-serif;font-size:clamp(37px,5.1vw,68px);
+  line-height:1.14;letter-spacing:-2px;margin:25px 0 19px
+}
+.gradient-text{
+  background:linear-gradient(100deg,#9b8aff,#59dfff 60%,#f6a4e9);
+  -webkit-background-clip:text;background-clip:text;color:transparent
+}
+.hero-copy{color:var(--muted);font-size:15px;line-height:1.9;max-width:490px}
+.hero-buttons{display:flex;gap:12px;flex-wrap:wrap;margin-top:28px}
+.hero-note{display:flex;align-items:center;gap:13px;margin-top:30px;color:var(--muted);font-size:11px}
+.avatar-stack{display:flex;padding-left:7px}
+.avatar-stack span{
+  margin-left:-7px;width:27px;height:27px;border-radius:50%;
+  display:grid;place-items:center;background:#242850;border:2px solid var(--bg);
+  font-size:13px
+}
+.hero-visual{position:relative;min-height:440px;display:grid;place-items:center}
+.planet-scene{
+  width:min(100%,450px);aspect-ratio:1;position:relative;
+  display:grid;place-items:center;isolation:isolate
+}
+.planet-glow{
+  position:absolute;width:75%;height:75%;border-radius:50%;
+  background:#7654ff28;filter:blur(50px);z-index:-1
+}
+.planet-main{
+  width:59%;aspect-ratio:1;border-radius:50%;
+  position:relative;overflow:hidden;
+  background:
+    radial-gradient(ellipse at 30% 22%,#d9e6ff 0%,#8995fa 9%,transparent 24%),
+    radial-gradient(ellipse at 65% 35%,#cf8bff 0%,transparent 23%),
+    radial-gradient(ellipse at 30% 70%,#2548bd 0%,transparent 34%),
+    linear-gradient(140deg,#a2a8ff,#5132a8 45%,#10153d 80%);
+  box-shadow:inset -35px -18px 65px #02030edb,inset 15px 10px 30px #ffffff66,
+    0 0 70px #795bff4b;
+  animation:float 6s ease-in-out infinite
+}
+.planet-main:before{
+  content:"";position:absolute;inset:0;
+  background:repeating-linear-gradient(165deg,transparent 0 15px,#ffffff12 17px,#100d3b22 23px,transparent 31px);
+  border-radius:50%;mix-blend-mode:screen
+}
+.orbit{
+  position:absolute;width:99%;height:34%;border:1px solid #b0a2ff85;
+  border-radius:50%;transform:rotate(-23deg);z-index:2;
+  box-shadow:0 0 13px #a38aff12
+}
+.orbit:after{
+  content:"";position:absolute;right:14%;top:0;width:9px;height:9px;
+  background:#c4faff;border-radius:50%;box-shadow:0 0 17px #58e4ff
+}
+.mini-moon{
+  position:absolute;width:38px;height:38px;right:13%;top:20%;
+  border-radius:50%;background:radial-gradient(circle at 30% 28%,#fff,#b8c7e9 30%,#3e4d7e 75%);
+  box-shadow:0 0 35px #96b5ff50
+}
+.float-label{
+  position:absolute;padding:12px 15px;border-radius:13px;
+  background:#11152bd9;border:1px solid var(--border);
+  backdrop-filter:blur(12px);z-index:3
+}
+.float-label small{color:var(--muted);display:block;font-size:10px;margin-bottom:5px}
+.float-label strong{font-size:13px}
+.label-one{top:13%;left:-2%}
+.label-two{bottom:13%;right:-2%}
+.label-two strong{color:var(--cyan)}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+.stats{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  background:var(--panel);border:1px solid var(--border);
+  border-radius:20px;padding:25px 10px;margin-bottom:95px;
+  backdrop-filter:blur(12px)
+}
+.stat{text-align:center;border-right:1px solid var(--border)}
+.stat:last-child{border:0}
+.stat strong{font-family:Orbitron,sans-serif;font-size:clamp(19px,2.5vw,29px)}
+.stat p{font-size:11px;color:var(--muted);margin-top:9px}
+section{margin-bottom:100px}
+.section-head{
+  display:flex;justify-content:space-between;align-items:end;
+  gap:20px;margin-bottom:28px
+}
+.kicker{font-size:10px;letter-spacing:2px;color:var(--cyan);font-weight:800;margin-bottom:11px}
+h2{font-family:Orbitron,sans-serif;font-size:clamp(23px,3.4vw,34px);line-height:1.3}
+.section-desc{font-size:13px;line-height:1.8;color:var(--muted);margin-top:10px}
+.search-wrap{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px}
+.search-box{
+  flex:1;min-width:190px;display:flex;align-items:center;gap:10px;
+  background:#ffffff08;border:1px solid var(--border);
+  border-radius:12px;padding:0 14px
+}
+.search-box input{width:100%;min-width:0;background:transparent;border:0;outline:none;color:white;padding:14px 0;font-size:13px}
+.search-box input::placeholder{color:#858ba7}
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:27px}
+.filter{
+  padding:10px 15px;border-radius:10px;border:1px solid var(--border);
+  color:var(--muted);background:#ffffff05;font-size:11px
+}
+.filter.active,.filter:hover{color:white;background:#9276ff20;border-color:#9276ff88}
+.result-count{color:var(--muted);font-size:11px;margin-left:auto;align-self:center}
+.planet-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:19px}
+.planet-card{
+  position:relative;overflow:hidden;border:1px solid var(--border);
+  border-radius:19px;background:linear-gradient(145deg,#151a35ba,#090b19f2);
+  transition:transform .25s,border-color .25s;cursor:pointer
+}
+.planet-card:hover{transform:translateY(-6px);border-color:#9b83ff80}
+.card-art{
+  height:190px;position:relative;display:grid;place-items:center;overflow:hidden;
+  background:radial-gradient(ellipse at 50% 70%,#5a45a322,transparent 70%)
+}
+.card-art:before{
+  content:"";position:absolute;inset:0;
+  background-image:radial-gradient(#ffffff9c 1px,transparent 1px);
+  background-size:31px 31px;opacity:.3
+}
+.celestial{
+  width:122px;height:122px;border-radius:50%;position:relative;z-index:1;
+  box-shadow:inset -22px -15px 30px #0009,0 0 38px var(--planet-glow);
+  background:var(--planet)
+}
+.celestial.ringed:after{
+  content:"";position:absolute;left:-27%;top:35%;width:154%;height:31%;
+  border:9px solid #d6bdff9c;border-left-color:#c6a3ff50;border-right-color:#ffffffad;
+  border-radius:50%;transform:rotate(-20deg);z-index:2
+}
+.card-top{position:absolute;top:13px;left:13px;right:13px;display:flex;justify-content:space-between;z-index:4}
+.tag{padding:6px 9px;border:1px solid #ffffff22;background:#0709189c;border-radius:20px;font-size:9px;color:#d3d5ec}
+.favorite{
+  width:31px;height:31px;border:1px solid #ffffff30;border-radius:50%;
+  background:#070918bd;color:white;font-size:17px;display:grid;place-items:center
+}
+.favorite.active{color:#ff83bf}
+.card-body{padding:19px}
+.card-title{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.card-title h3{font-family:Orbitron,sans-serif;font-size:17px}
+.card-title span{font-size:10px;color:var(--cyan)}
+.card-body p{font-size:12px;color:var(--muted);line-height:1.8;margin:11px 0 18px;min-height:43px}
+.card-footer{border-top:1px solid var(--border);padding-top:14px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.card-footer small{color:var(--muted);font-size:10px}
+.details-link{color:#c1b4ff;font-size:11px;font-weight:700}
+.empty-state{grid-column:1/-1;text-align:center;padding:55px 20px;border:1px dashed var(--border);border-radius:16px;color:var(--muted)}
+.mission-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.mission{
+  padding:23px;border:1px solid var(--border);border-radius:18px;
+  background:var(--panel);display:flex;gap:17px;align-items:flex-start
+}
+.mission-icon{
+  flex:0 0 49px;height:49px;border-radius:14px;display:grid;place-items:center;
+  background:#9275ff1c;font-size:23px
+}
+.mission h3{font-size:14px;margin:2px 0 8px}
+.mission p{color:var(--muted);font-size:11px;line-height:1.8}
+.mission-status{display:inline-block;margin-top:12px;font-size:9px;color:#7df4c2;background:#5ff2b315;padding:6px 9px;border-radius:20px}
+.mission-status.planned{color:#b9a9ff;background:#9e80ff18}
+.banner{
+  position:relative;overflow:hidden;text-align:center;padding:55px 24px;
+  border:1px solid var(--border);border-radius:24px;
+  background:radial-gradient(ellipse at 50% 120%,#6653e93d,transparent 65%),#101329b5
+}
+.banner:before{content:"✦       ·       ✧       ·       ✦";position:absolute;top:18px;left:0;right:0;color:#a5a1ff4d;letter-spacing:18px}
+.banner h2{margin:0 auto 13px;max-width:650px}
+.banner p{color:var(--muted);font-size:13px;line-height:1.8;max-width:550px;margin:0 auto 23px}
+footer{border-top:1px solid var(--border);padding:26px 0;color:var(--muted);font-size:11px}
+.footer-inner{display:flex;justify-content:space-between;gap:15px;flex-wrap:wrap}
+.modal{
+  position:fixed;inset:0;z-index:50;background:#02030ddf;
+  backdrop-filter:blur(12px);display:none;place-items:center;padding:20px
+}
+.modal.open{display:grid}
+.modal-box{
+  width:min(540px,100%);max-height:88vh;overflow:auto;
+  border:1px solid #a092ff5a;border-radius:23px;
+  background:linear-gradient(145deg,#171b39,#080a18);padding:25px;
+  box-shadow:0 25px 100px #0009;animation:appear .2s ease
+}
+@keyframes appear{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:none}}
+.modal-head{display:flex;justify-content:space-between;align-items:center;gap:15px}
+.modal-head h3{font-family:Orbitron,sans-serif;font-size:20px}
+.close-btn{width:35px;height:35px;background:#ffffff0d;border:1px solid var(--border);border-radius:10px;color:white;font-size:20px}
+.modal-planet-art{height:190px;display:grid;place-items:center}
+.modal-planet-art .celestial{width:145px;height:145px}
+.modal-copy{color:var(--muted);font-size:13px;line-height:1.9;margin:10px 0 20px}
+.detail-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.detail-stat{background:#ffffff07;border:1px solid var(--border);padding:13px;border-radius:12px}
+.detail-stat small{display:block;color:var(--muted);font-size:10px;margin-bottom:7px}
+.detail-stat strong{font-size:13px}
+.toast{
+  position:fixed;bottom:24px;left:50%;transform:translate(-50%,20px);
+  background:#1c2140;border:1px solid var(--border);color:white;
+  padding:12px 18px;border-radius:12px;font-size:12px;z-index:90;
+  opacity:0;pointer-events:none;transition:.25s
+}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+body.light-mode{
+  --bg:#eaf0ff;--panel:rgba(255,255,255,.83);
+  --border:rgba(69,83,150,.2);--text:#15172e;--muted:#5c6382
+}
+body.light-mode header{background:#edf1ffdc}
+body.light-mode .search-box,body.light-mode .filter,body.light-mode .icon-btn,body.light-mode .menu-btn,body.light-mode .btn:not(.primary){color:var(--text);background:#ffffff91}
+body.light-mode .search-box input{color:var(--text)}
+body.light-mode .planet-card,body.light-mode .mission,body.light-mode .banner{background:#ffffffb8}
+body.light-mode .tag,body.light-mode .favorite{background:#171a328c;color:white}
+@media(max-width:850px){
+ .nav-links{gap:15px}
+ .nav-links a{font-size:11px}
+ .hero{min-height:500px;grid-template-columns:1fr 1fr}
+ .hero-visual{min-height:350px}
+ .planet-grid{grid-template-columns:repeat(2,1fr)}
+ .label-one{left:0}.label-two{right:0}
+}
+@media(max-width:650px){
+ .nav{min-height:67px}
+ .brand{font-size:13px}.brand-icon{width:34px;height:34px}
+ .menu-btn{display:grid}
+ .nav-links{
+   display:none;position:absolute;top:67px;left:0;right:0;padding:20px 5%;
+   background:#090b1af7;border-bottom:1px solid var(--border);
+   flex-direction:column;align-items:stretch;gap:0
+ }
+ .nav-links.open{display:flex}
+ .nav-links a{font-size:13px;padding:14px 0;border-bottom:1px solid var(--border)}
+ .nav-actions .btn{display:none}
+ .hero{grid-template-columns:1fr;padding-top:55px;gap:0}
+ h1{font-size:clamp(38px,10vw,56px)}
+ .hero-copy{font-size:13px}
+ .hero-visual{min-height:330px;margin-top:15px}
+ .planet-scene{width:min(88%,360px)}
+ .stats{grid-template-columns:1fr 1fr;row-gap:23px;margin-bottom:70px;padding:23px 8px}
+ .stat:nth-child(2){border:0}
+ .stat strong{font-size:22px}
+ section{margin-bottom:75px}
+ .section-head{align-items:flex-start;flex-direction:column}
+ .planet-grid{grid-template-columns:1fr}
+ .card-art{height:205px}
+ .celestial{width:132px;height:132px}
+ .mission-grid{grid-template-columns:1fr}
+ .banner{padding:48px 20px}
+}
+@media(prefers-reduced-motion:reduce){
+ *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}
+}
+</style>
+</head>
+<body>
+<canvas id="starfield" aria-hidden="true"></canvas>
+<div class="aurora"></div>
+<div class="aurora two"></div>
+
+<header>
+  <div class="container nav">
+    <a class="brand" href="#home" aria-label="Galaxy Explorer home">
+      <div class="brand-icon">✦</div>
+      <span>GALAXY <span>EXPLORER</span></span>
+    </a>
+    <nav class="nav-links" id="navLinks">
+      <a href="#home">Home</a>
+      <a href="#planets">Planets</a>
+      <a href="#missions">Missions</a>
+      <a href="#favorites">My Favorites</a>
+    </nav>
+    <div class="nav-actions">
+      <button class="icon-btn" id="themeButton" title="Toggle light/dark theme" aria-label="Toggle theme">☼</button>
+      <button class="icon-btn" id="soundButton" title="Toggle sound effects" aria-label="Toggle sound">♫</button>
+      <a href="#planets" class="btn primary">Explore ↗</a>
+      <button class="menu-btn" id="menuButton" aria-label="Open menu" aria-expanded="false">☰</button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="container">
+    <section class="hero" id="home">
+      <div class="hero-content">
+        <div class="eyebrow"><span class="pulse"></span> YOUR COSMIC JOURNEY STARTS HERE</div>
+        <h1>THE UNIVERSE<br>IS YOURS TO<br><span class="gradient-text">EXPLORE.</span></h1>
+        <p class="hero-copy">Look beyond the stars. Discover mysterious planets, distant galaxies and the incredible wonders hiding in our universe.</p>
+        <div class="hero-buttons">
+          <a href="#planets" class="btn primary">✦ Start Exploring</a>
+          <a href="#missions" class="btn">Discover Missions ↗</a>
+        </div>
+        <div class="hero-note">
+          <div class="avatar-stack"><span>🌎</span><span>🪐</span><span>🌌</span></div>
+          <span>A universe of discoveries awaits you.</span>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <div class="planet-scene">
+          <div class="planet-glow"></div>
+          <div class="orbit"></div>
+          <div class="planet-main"></div>
+          <div class="mini-moon"></div>
+          <div class="float-label label-one"><small>MISSION STATUS</small><strong>Exploration ready</strong></div>
+          <div class="float-label label-two"><small>YOUR DESTINATION</small><strong>Beyond the stars ✦</strong></div>
+        </div>
+      </div>
+    </section>
+
+    <div class="stats" aria-label="Space facts">
+      <div class="stat"><strong>8</strong><p>Solar System Planets</p></div>
+      <div class="stat"><strong>200+</strong><p>Known Moons</p></div>
+      <div class="stat"><strong>5,000+</strong><p>Confirmed Exoplanets</p></div>
+      <div class="stat"><strong>13.8B</strong><p>Years Since Big Bang</p></div>
+    </div>
+
+    <section id="planets">
+      <div class="section-head">
+        <div>
+          <div class="kicker">✦ CELESTIAL DATABASE</div>
+          <h2>Explore the Cosmos</h2>
+          <p class="section-desc">Choose a world and uncover its secrets.</p>
+        </div>
+        <button class="btn" id="randomButton">🎲 Random Discovery</button>
+      </div>
+
+      <div class="search-wrap">
+        <label class="search-box">
+          <span>⌕</span>
+          <input id="searchInput" type="search" placeholder="Search planets, galaxies, moons..." autocomplete="off" aria-label="Search celestial objects">
+        </label>
+        <button class="btn" id="clearSearch">Clear ✕</button>
+      </div>
+      <div class="filters" id="filters">
+        <button class="filter active" data-filter="all">All Objects</button>
+        <button class="filter" data-filter="planet">Planets</button>
+        <button class="filter" data-filter="moon">Moons</button>
+        <button class="filter" data-filter="galaxy">Galaxies</button>
+        <button class="filter" data-filter="star">Stars</button>
+        <button class="filter" data-filter="favorite">♥ Favorites</button>
+        <span class="result-count" id="resultCount" aria-live="polite"></span>
+      </div>
+      <div class="planet-grid" id="planetGrid"></div>
+    </section>
+
+    <section id="missions">
+      <div class="section-head">
+        <div>
+          <div class="kicker">✦ HUMANITY AMONG THE STARS</div>
+          <h2>Legendary Space Missions</h2>
+          <p class="section-desc">Meet the missions that changed our understanding of space.</p>
+        </div>
+      </div>
+      <div class="mission-grid">
+        <article class="mission">
+          <div class="mission-icon">🔴</div>
+          <div><h3>Mars Exploration</h3><p>Robotic explorers study the Martian surface, geology and the possibility of ancient microbial life.</p><span class="mission-status">ONGOING EXPLORATION</span></div>
+        </article>
+        <article class="mission">
+          <div class="mission-icon">🌌</div>
+          <div><h3>James Webb Telescope</h3><p>Observing distant galaxies, star formation and exoplanet atmospheres using infrared astronomy.</p><span class="mission-status">SCIENCE OPERATIONS</span></div>
+        </article>
+        <article class="mission">
+          <div class="mission-icon">☀️</div>
+          <div><h3>Parker Solar Probe</h3><p>Flying through the Sun's outer atmosphere to investigate the solar wind and our star.</p><span class="mission-status">SOLAR INVESTIGATION</span></div>
+        </article>
+        <article class="mission">
+          <div class="mission-icon">🛰️</div>
+          <div><h3>Voyager Journey</h3><p>Twin spacecraft continue their historic journey through interstellar space, far beyond the planets.</p><span class="mission-status">INTERSTELLAR JOURNEY</span></div>
+        </article>
+      </div>
+    </section>
+
+    <section id="favorites">
+      <div class="banner">
+        <div class="kicker">✦ YOUR PERSONAL UNIVERSE</div>
+        <h2>Keep Your Favorite Worlds Close.</h2>
+        <p>Save fascinating objects to your favorites and build your own personal cosmic collection. Your saved discoveries stay on this device.</p>
+        <a href="#planets" class="btn primary">Build Your Collection ↗</a>
+      </div>
+    </section>
+  </div>
+</main>
+
+<footer>
+  <div class="container footer-inner">
+    <a class="brand" href="#home"><span>✦ GALAXY <span>EXPLORER</span></span></a>
+    <span>Made for curious minds. Keep looking up. ✨</span>
+    <span>Educational demo · Not live astronomical data</span>
+  </div>
+</footer>
+
+<div class="modal" id="detailModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3 id="modalTitle">Celestial Object</h3>
+      <button class="close-btn" id="closeModal" aria-label="Close details">×</button>
+    </div>
+    <div class="modal-planet-art" id="modalArt"></div>
+    <p class="modal-copy" id="modalDescription"></p>
+    <div class="detail-stats" id="modalStats"></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:20px">
+      <button class="btn primary" id="modalFavorite">♡ Save Favorite</button>
+      <button class="btn" id="modalCloseBottom">Back to Universe</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+"use strict";
+
+/* GALAXY EXPLORER — all interactive features in this file */
+
+const objects = [
+ {id:"mercury",name:"Mercury",type:"planet",category:"TERRESTRIAL",subtitle:"The Swiftest Planet",color:"radial-gradient(circle at 30% 25%,#e5d9ca,#a69b91 43%,#494451 80%)",glow:"#aaa2aa",description:"The smallest planet in our solar system, Mercury races around the Sun in just 88 Earth days. Its heavily cratered surface resembles our Moon.",distance:"57.9 million km",diameter:"4,879 km",year:"88 Earth days",moons:"0"},
+ {id:"venus",name:"Venus",type:"planet",category:"TERRESTRIAL",subtitle:"The Hottest World",color:"radial-gradient(circle at 28% 25%,#fff0b6,#e9b66d 35%,#a85432 70%,#572c40)",glow:"#ffb66a",description:"Venus has a thick atmosphere rich in carbon dioxide and clouds of sulfuric acid. Its runaway greenhouse effect makes it the hottest planet.",distance:"108.2 million km",diameter:"12,104 km",year:"225 Earth days",moons:"0"},
+ {id:"earth",name:"Earth",type:"planet",category:"TERRESTRIAL",subtitle:"Our Pale Blue Dot",color:"radial-gradient(circle at 30% 28%,#8af1ff,#247ddd 35%,#164c91 57%,#10213f)",glow:"#40aaff",description:"Our home planet is the only world currently known to support life. Liquid water, a protective atmosphere and a magnetic field make Earth special.",distance:"149.6 million km",diameter:"12,742 km",year:"365.25 days",moons:"1"},
+ {id:"mars",name:"Mars",type:"planet",category:"TERRESTRIAL",subtitle:"The Red Planet",color:"radial-gradient(circle at 32% 25%,#ffd09c,#e8794f 36%,#a33b30 67%,#4d2338)",glow:"#ff6d4b",description:"Mars is a cold desert world with giant volcanoes, ancient river valleys and polar ice. Scientists investigate whether it once had conditions suitable for life.",distance:"227.9 million km",diameter:"6,779 km",year:"687 Earth days",moons:"2"},
+ {id:"jupiter",name:"Jupiter",type:"planet",category:"GAS GIANT",subtitle:"King of the Planets",color:"repeating-linear-gradient(175deg,#f6dfbf 0 9px,#b77754 11px 19px,#edd1aa 21px 30px,#95604d 32px 39px)",glow:"#e4b17a",description:"Jupiter is the largest planet in our solar system. Its enormous storms include the Great Red Spot, a storm system observed for centuries.",distance:"778.6 million km",diameter:"139,820 km",year:"11.86 Earth years",moons:"95+"},
+ {id:"saturn",name:"Saturn",type:"planet",category:"GAS GIANT",subtitle:"Lord of the Rings",color:"radial-gradient(circle at 30% 28%,#fff0bc,#d8b978 40%,#98764b 75%)",glow:"#e5c78b",ring:true,description:"Saturn's spectacular rings are made mostly of countless pieces of water ice, with rocky material and dust. It is less dense than water on average.",distance:"1.43 billion km",diameter:"116,460 km",year:"29.45 Earth years",moons:"146+"},
+ {id:"uranus",name:"Uranus",type:"planet",category:"ICE GIANT",subtitle:"The Sideways Planet",color:"radial-gradient(circle at 30% 25%,#d4ffff,#7fdfe9 42%,#328ca9 82%)",glow:"#76e5f4",description:"Uranus rotates on its side, producing extreme seasonal variations. Its atmosphere contains methane, which gives the planet its pale blue-green appearance.",distance:"2.87 billion km",diameter:"50,724 km",year:"84 Earth years",moons:"28+"},
+ {id:"neptune",name:"Neptune",type:"planet",category:"ICE GIANT",subtitle:"The Distant Blue World",color:"radial-gradient(circle at 30% 24%,#8dcaff,#3266ed 43%,#101a77 82%)",glow:"#4678ff",description:"Neptune is a distant ice giant with extremely fast winds. It was the first planet whose existence was predicted mathematically before observation confirmed it.",distance:"4.50 billion km",diameter:"49,244 km",year:"165 Earth years",moons:"16"},
+ {id:"moon",name:"Earth's Moon",type:"moon",category:"NATURAL SATELLITE",subtitle:"Our Celestial Companion",color:"radial-gradient(circle at 30% 27%,#fff,#bfc5d4 38%,#727c91 76%)",glow:"#c6d3ff",description:"Earth's Moon stabilizes our planet's axial tilt and drives ocean tides. Humans first walked on its surface during NASA's Apollo 11 mission in 1969.",distance:"384,400 km",diameter:"3,475 km",year:"27.3 days orbit",moons:"0"},
+ {id:"europa",name:"Europa",type:"moon",category:"JUPITER'S MOON",subtitle:"An Ocean Beneath the Ice",color:"radial-gradient(circle at 30% 25%,#f5e9cc,#b8a58b 38%,#655b68 72%)",glow:"#e0c8a1",description:"Jupiter's moon Europa has a cracked icy crust and strong evidence for a global ocean beneath it. That ocean makes Europa a compelling target in the search for habitable environments.",distance:"671,100 km from Jupiter",diameter:"3,122 km",year:"3.55 days orbit",moons:"0"},
+ {id:"titan",name:"Titan",type:"moon",category:"SATURN'S MOON",subtitle:"Lakes of Liquid Methane",color:"radial-gradient(circle at 30% 24%,#f9d59a,#ce9149 44%,#77502c 80%)",glow:"#d9a052",description:"Saturn's largest moon has a dense nitrogen atmosphere, methane rain and lakes of liquid hydrocarbons. It is a fascinating natural laboratory for planetary science.",distance:"1.22 million km from Saturn",diameter:"5,150 km",year:"15.9 days orbit",moons:"0"},
+ {id:"sun",name:"The Sun",type:"star",category:"G-TYPE STAR",subtitle:"The Star of Our System",color:"radial-gradient(circle at 32% 25%,#fffbd0,#ffda54 34%,#ff8c24 66%,#c94324)",glow:"#ffac35",description:"Our Sun is a star powered by nuclear fusion in its core. Its light and energy drive Earth's climate, power photosynthesis and hold the solar system together gravitationally.",distance:"149.6 million km from Earth",diameter:"1.39 million km",year:"~225 million years around galaxy",moons:"0"},
+ {id:"sirius",name:"Sirius",type:"star",category:"BINARY STAR SYSTEM",subtitle:"The Brightest Night Star",color:"radial-gradient(circle at 35% 25%,#fff,#d2e6ff 38%,#779bff 72%)",glow:"#a3c5ff",description:"Sirius is the brightest star in Earth's night sky. It is a binary system consisting of Sirius A and a faint white dwarf companion, Sirius B.",distance:"8.6 light-years",diameter:"~2.0 solar diameters (Sirius A)",year:"~50.1 years binary orbit",moons:"0 known"},
+ {id:"andromeda",name:"Andromeda",type:"galaxy",category:"SPIRAL GALAXY",subtitle:"Our Galactic Neighbor",color:"radial-gradient(ellipse at 50% 50%,#fff5d5 0%,#f5c9fa 9%,#ab8cff 22%,#3e4caa 42%,#141b4b 70%,transparent 72%)",glow:"#a88bff",description:"The Andromeda Galaxy is a massive spiral galaxy and the nearest major galaxy to the Milky Way. It is approaching our galaxy, though any eventual merger is billions of years away.",distance:"~2.5 million light-years",diameter:"~220,000 light-years",year:"Billions of years to evolve",moons:"Satellite galaxies"},
+ {id:"milkyway",name:"Milky Way",type:"galaxy",category:"BARRED SPIRAL GALAXY",subtitle:"Our Galactic Home",color:"radial-gradient(ellipse at 50% 50%,#ffffff 0%,#d7caff 5%,#a5a7ff 14%,#5d58b7 28%,#222555 48%,transparent 70%)",glow:"#a49bff",description:"Our Milky Way contains hundreds of billions of stars, along with gas, dust and dark matter. Our solar system resides in a spiral feature called the Orion Arm.",distance:"~26,000 light-years from galactic center",diameter:"~100,000 light-years",year:"~225–250 million years per galactic orbit",moons:"Many satellite galaxies"},
+ {id:"pleiades",name:"Pleiades",type:"star",category:"OPEN STAR CLUSTER",subtitle:"The Seven Sisters",color:"radial-gradient(circle at 40% 35%,#fff 0 3%,#9feaff 5%,transparent 10%),radial-gradient(circle at 65% 25%,#fff 0 2%,#8bbaff 5%,transparent 9%),radial-gradient(circle at 35% 68%,#e8faff 0 3%,#779dff 6%,transparent 12%),radial-gradient(ellipse,#304eaa,#111736 70%)",glow:"#83baff",description:"The Pleiades, also known as the Seven Sisters, is a young open star cluster visible to the naked eye. Its hot blue stars are surrounded by faint reflection nebulosity.",distance:"~444 light-years",diameter:"~17 light-years",year:"~100 million years old",moons:"N/A"}
+];
+
+const grid=document.getElementById("planetGrid");
+const searchInput=document.getElementById("searchInput");
+const resultCount=document.getElementById("resultCount");
+const modal=document.getElementById("detailModal");
+const toastEl=document.getElementById("toast");
+
+let currentFilter="all";
+let activeObject=null;
+let toastTimer;
+let soundEnabled=false;
+let audioContext=null;
+let favorites=new Set();
+
+try{
+ const stored=JSON.parse(localStorage.getItem("galaxyExplorerFavorites")||"[]");
+ if(Array.isArray(stored))favorites=new Set(stored.filter(id=>objects.some(o=>o.id===id)));
+}catch(error){console.warn("Favorites storage unavailable.",error)}
+
+function saveFavorites(){
+ try{localStorage.setItem("galaxyExplorerFavorites",JSON.stringify([...favorites]))}
+ catch(error){showToast("Browser storage unavailable.")}
+}
+function escapeHTML(value){
+ return String(value).replace(/[&<>"']/g,char=>({
+  "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+ }[char]));
+}
+function artStyle(o){
+ return `--planet:${o.color};--planet-glow:${o.glow};`;
+}
+function celestialHTML(o,extraClass=""){
+ return `<div class="celestial ${o.ring?"ringed":""} ${extraClass}" style="${artStyle(o)}" aria-hidden="true"></div>`;
+}
+function renderObjects(){
+ const query=searchInput.value.trim().toLowerCase();
+ const filtered=objects.filter(o=>{
+  const matchesFilter=currentFilter==="all"||
+   (currentFilter==="favorite"?favorites.has(o.id):o.type===currentFilter);
+  const matchesQuery=[o.name,o.type,o.category,o.subtitle,o.description].some(v=>v.toLowerCase().includes(query));
+  return matchesFilter&&matchesQuery;
+ });
+ resultCount.textContent=`${filtered.length} object${filtered.length===1?"":"s"} found`;
+ if(!filtered.length){
+  grid.innerHTML='<div class="empty-state"><div style="font-size:35px;margin-bottom:12px">🔭</div><h3 style="color:var(--text);margin-bottom:9px">No celestial objects found</h3><p>Try another search or select a different category.</p></div>';
+  return;
+ }
+ grid.innerHTML=filtered.map(o=>`
+  <article class="planet-card" data-object="${o.id}" tabindex="0" role="button" aria-label="Explore ${escapeHTML(o.name)}">
+   <div class="card-art">
+    <div class="card-top">
+     <span class="tag">${escapeHTML(o.category)}</span>
+     <button class="favorite ${favorites.has(o.id)?"active":""}" data-favorite="${o.id}" aria-label="${favorites.has(o.id)?"Remove":"Add"} ${escapeHTML(o.name)} ${"favorite"}" aria-pressed="${favorites.has(o.id)}">${favorites.has(o.id)?"♥":"♡"}</button>
+    </div>
+    ${celestialHTML(o)}
+   </div>
+   <div class="card-body">
+    <div class="card-title"><h3>${escapeHTML(o.name)}</h3><span>${escapeHTML(o.type.toUpperCase())}</span></div>
+    <p>${escapeHTML(o.subtitle)}. ${escapeHTML(o.description.split(".")[0])}.</p>
+    <div class="card-footer"><small>📍 ${escapeHTML(o.distance)}</small><span class="details-link">Explore object ↗</span></div>
+   </div>
+  </article>`).join("");
+}
+function showToast(message){
+ toastEl.textContent=message;
+ toastEl.classList.add("show");
+ clearTimeout(toastTimer);
+ toastTimer=setTimeout(()=>toastEl.classList.remove("show"),2400);
+}
+function playSound(frequency=540){
+ if(!soundEnabled)return;
+ try{
+  audioContext=audioContext||new(window.AudioContext||window.webkitAudioContext)();
+  if(audioContext.state==="suspended")audioContext.resume();
+  const oscillator=audioContext.createOscillator();
+  const gain=audioContext.createGain();
+  oscillator.type="sine";oscillator.frequency.value=frequency;
+  gain.gain.setValueAtTime(.055,audioContext.currentTime);
+  gain.gain.exponentialRampToValueAtTime(.001,audioContext.currentTime+.12);
+  oscillator.connect(gain);gain.connect(audioContext.destination);
+  oscillator.start();oscillator.stop(audioContext.currentTime+.12);
+ }catch(error){console.warn("Audio unavailable.",error)}
+}
+function toggleFavorite(id){
+ if(favorites.has(id)){favorites.delete(id);showToast("Removed from your favorites")}
+ else{favorites.add(id);showToast("✦ Added to your cosmic favorites!")}
+ saveFavorites();playSound(680);renderObjects();
+ if(activeObject&&activeObject.id===id&&modal.classList.contains("open"))updateModalFavorite();
+}
+function updateModalFavorite(){
+ const button=document.getElementById("modalFavorite");
+ if(!activeObject)return;
+ const saved=favorites.has(activeObject.id);
+ button.textContent=saved?"♥ Saved to Favorites":"♡ Save Favorite";
+}
+function openDetails(id){
+ const o=objects.find(item=>item.id===id);
+ if(!o)return;
+ activeObject=o;
+ document.getElementById("modalTitle").textContent=o.name;
+ document.getElementById("modalArt").innerHTML=celestialHTML(o);
+ document.getElementById("modalDescription").textContent=o.description;
+ const stats=[
+  ["Object Type",o.type[0].toUpperCase()+o.type.slice(1)],
+  ["Classification",o.category],
+  ["Distance",o.distance],
+  ["Diameter / Size",o.diameter],
+  ["Orbital Period / Year",o.year],
+  ["Known Moons / Companions",o.moons]
+ ];
+ document.getElementById("modalStats").innerHTML=stats.map(([label,value])=>`
+  <div class="detail-stat"><small>${escapeHTML(label)}</small><strong>${escapeHTML(value)}</strong></div>`).join("");
+ updateModalFavorite();
+ modal.classList.add("open");
+ document.body.style.overflow="hidden";
+ document.getElementById("closeModal").focus();
+ playSound(440);
+}
+function closeModal(){
+ modal.classList.remove("open");
+ document.body.style.overflow="";
+ activeObject=null;
+}
+grid.addEventListener("click",event=>{
+ const favoriteButton=event.target.closest("[data-favorite]");
+ if(favoriteButton){
+  event.stopPropagation();toggleFavorite(favoriteButton.dataset.favorite);return;
+ }
+ const card=event.target.closest("[data-object]");
+ if(card)openDetails(card.dataset.object);
+});
+grid.addEventListener("keydown",event=>{
+ if((event.key==="Enter"||event.key===" ")&&event.target.matches("[data-object]")){
+  event.preventDefault();openDetails(event.target.dataset.object);
+ }
+});
+searchInput.addEventListener("input",renderObjects);
+document.getElementById("clearSearch").addEventListener("click",()=>{
+ searchInput.value="";currentFilter="all";
+ document.querySelectorAll(".filter").forEach(b=>b.classList.toggle("active",b.dataset.filter==="all"));
+ renderObjects();searchInput.focus();
+});
+document.getElementById("filters").addEventListener("click",event=>{
+ const button=event.target.closest("[data-filter]");
+ if(!button)return;
+ currentFilter=button.dataset.filter;
+ document.querySelectorAll(".filter").forEach(b=>b.classList.toggle("active",b===button));
+ renderObjects();
+});
+document.getElementById("randomButton").addEventListener("click",()=>{
+ const candidates=objects.filter(o=>currentFilter!=="favorite"||favorites.has(o.id));
+ if(!candidates.length){showToast("Save a favorite first, explorer!");return}
+ const chosen=candidates[Math.floor(Math.random()*candidates.length)];
+ openDetails(chosen.id);
+});
+document.getElementById("modalFavorite").addEventListener("click",()=>{
+ if(activeObject)toggleFavorite(activeObject.id);
+});
+document.getElementById("closeModal").addEventListener("click",closeModal);
+document.getElementById("modalCloseBottom").addEventListener("click",closeModal);
+modal.addEventListener("click",event=>{if(event.target===modal)closeModal()});
+document.addEventListener("keydown",event=>{if(event.key==="Escape"&&modal.classList.contains("open"))closeModal()});
+document.getElementById("themeButton").addEventListener("click",()=>{
+ document.body.classList.toggle("light-mode");
+ const light=document.body.classList.contains("light-mode");
+ document.getElementById("themeButton").textContent=light?"☾":"☼";
+ try{localStorage.setItem("galaxyExplorerTheme",light?"light":"dark")}catch(error){}
+ showToast(light?"Light theme enabled":"Cosmic dark theme enabled");
+});
+try{
+ if(localStorage.getItem("galaxyExplorerTheme")==="light"){
+  document.body.classList.add("light-mode");
+  document.getElementById("themeButton").textContent="☾";
+ }
+}catch(error){}
+document.getElementById("soundButton").addEventListener("click",()=>{
+ soundEnabled=!soundEnabled;
+ document.getElementById("soundButton").textContent=soundEnabled?"♫":"♪";
+ document.getElementById("soundButton").title=soundEnabled?"Turn sound off":"Turn sound on";
+ showToast(soundEnabled?"Sound effects enabled":"Sound effects disabled");
+ if(soundEnabled)playSound();
+});
+const menuButton=document.getElementById("menuButton");
+const navLinks=document.getElementById("navLinks");
+menuButton.addEventListener("click",()=>{
+ const open=navLinks.classList.toggle("open");
+ menuButton.setAttribute("aria-expanded",String(open));
+ menuButton.textContent=open?"×":"☰";
+});
+navLinks.addEventListener("click",event=>{
+ if(event.target.closest("a")){
+  navLinks.classList.remove("open");
+  menuButton.setAttribute("aria-expanded","false");
+  menuButton.textContent="☰";
+ }
+});
+
+/* Animated starfield: lightweight canvas, no external library */
+const canvas=document.getElementById("starfield");
+const ctx=canvas.getContext("2d");
+let stars=[];
+let canvasWidth=0,canvasHeight=0,rafId=0;
+const reduceMotion=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+function resizeStars(){
+ const dpr=Math.min(window.devicePixelRatio||1,2);
+ canvasWidth=window.innerWidth;canvasHeight=window.innerHeight;
+ canvas.width=Math.round(canvasWidth*dpr);
+ canvas.height=Math.round(canvasHeight*dpr);
+ ctx.setTransform(dpr,0,0,dpr,0,0);
+ const count=Math.min(220,Math.floor(canvasWidth*canvasHeight/5200));
+ stars=Array.from({length:count},()=>({
+  x:Math.random()*canvasWidth,y:Math.random()*canvasHeight,
+  r:Math.random()*1.5+.2,a:Math.random()*.7+.2,
+  speed:Math.random()*.22+.025,phase:Math.random()*Math.PI*2
+ }));
+ drawStars(0);
+}
+function drawStars(time){
+ ctx.clearRect(0,0,canvasWidth,canvasHeight);
+ for(const s of stars){
+  const twinkle=reduceMotion?1:.72+.28*Math.sin(time*.001*s.speed*8+s.phase);
+  ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
+  ctx.fillStyle=`rgba(207,220,255,${s.a*twinkle})`;ctx.fill();
+ }
+ if(!reduceMotion)rafId=requestAnimationFrame(drawStars);
+}
+window.addEventListener("resize",()=>{
+ cancelAnimationFrame(rafId);resizeStars();
+});
+resizeStars();
+renderObjects();
+</script>
+</body>
+</html>
